@@ -4,3 +4,6 @@ $py.class
 *-objective.json
 *-flag.json
 wip/
+/diffs
+/tests
+ff3.smc
