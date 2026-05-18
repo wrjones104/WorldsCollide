@@ -114,3 +114,51 @@ graph TD
 4. **Compile & Generate**: Execute `python3 wc.py -i ff3.smc` to verify that standard seed compilation compiles cleanly.
 5. **Verify Outputs**: Use `valid_rom_file` verification logic to ensure ROM consistency where applicable.
 6. **Update Instruction Files**: Update both `llms.md` and `agents.md` immediately if any changes affect the structure or expectations documented inside these manuals.
+
+---
+
+## 5. Python 3.14 Set Sampling Guardrails
+
+**Error Signature**:
+```text
+TypeError: Population must be a sequence. For dicts or sets, use sorted(d).
+```
+**Cause**: Passing a `set` directly to `random.sample()` was deprecated in Python 3.9 and results in a fatal `TypeError` in newer Python versions (such as Python 3.11 through Python 3.14).
+**Resolution**:
+- Convert the set to a tuple before using random selection:
+  ```diff
+  - rand_item = random.sample(self.available_items, 1)[0]
+  + rand_item = random.sample(tuple(self.available_items), 1)[0]
+  ```
+- Converting the set to a tuple satisfies Python's sequence checks while maintaining 100% identical random state generation and choice behavior as the vanilla randomizer, preserving full seed compatibility.
+
+---
+
+## 6. Gating deadlocks (AssertionError) in choose_reward
+
+**Error Signature**:
+```text
+  File "event_reward.py", line 51, in choose_reward
+    assert(item_possible)
+AssertionError
+```
+**Cause**: The method `single_possible_type(self)` in `event/event_reward.py` returned `True` for compound flag values like `RewardType.CHARACTER | RewardType.ESPER` because `in RewardType` evaluated to `True` for valid flag combinations in Python's enum implementation. This caused these slots to be processed prematurely during `choose_single_possible_type_rewards` when no characters or espers were left, triggering gating deadlocks.
+**Resolution**:
+- Explicitly check against the exact single-member flags:
+  ```python
+  def single_possible_type(self):
+      return self.possible_types in (RewardType.CHARACTER, RewardType.ESPER, RewardType.ITEM)
+
+---
+
+## 7. Assembly Hooks and CPU Register Preservation
+
+**Error Signature**: Monster sprites appear as garbled noise blocks, or regular enemies have incorrect sprites.
+**Cause**: Modifying registers (such as `X` or `Y`) or using incorrect data bank instruction opcodes inside custom assembly subroutines. Specifically:
+1. Destructively overwriting `X` inside a hook when the caller context relies on `X` containing the original graphics index.
+2. Using 16-bit absolute address instructions like `LDA absolute,X` (`0xBD`) to access 24-bit dynamic ROM banks (`F0`), which reads from the incorrect data bank and treats the third address byte as the opcode of the next instruction, shifting the entire instruction stream.
+3. Looking up active monster IDs in the wrong table (like general actor list WRAM `$2001,X` where slot indices do not map directly to monster offsets), leading to missing or un-rendered sprite overlays in multi-boss battles.
+**Resolution**:
+- Always preserve and restore modified registers using `PHX`/`PLX` or `PHY`/`PLY` at the boundaries of your subroutine.
+- Use 24-bit long addressing opcodes (`0xAF` for `LDA long`, `0xBF` for `LDA long,X`) when referencing addresses dynamically allocated to Bank `F0`.
+- Always load active monster IDs directly from the active monster ID table WRAM `$812F,Y` (indexed by slot index * 2) after clearing the 16-bit Accumulator (using `TDC` `0x7B`) at the very beginning of the subroutine to avoid index register pollution from caller active CPU registers.
