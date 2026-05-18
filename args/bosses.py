@@ -66,10 +66,9 @@ def process(args):
                 return "".join(c.lower() for c in name if c.isalnum())
 
             name_to_id = {}
-            for enemy_dict in [bosses.normal_enemy_name, bosses.dragon_enemy_name, bosses.statue_enemy_name, bosses.final_battle_enemy_name]:
-                for eid, name in enemy_dict.items():
-                    if eid not in excluded_final_battle_ids:
-                        name_to_id[normalize(name)] = eid
+            for eid, name in bosses.enemy_name.items():
+                if eid not in excluded_final_battle_ids and eid not in bosses.removed_enemy_name:
+                    name_to_id[normalize(name)] = eid
 
             normalized_input = normalize(args.oops)
             if normalized_input in name_to_id:
