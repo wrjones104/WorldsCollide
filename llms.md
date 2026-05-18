@@ -12,27 +12,27 @@ This guide is designed for LLMs (such as Claude, GPT-4, Cursor, Gemini, Copilot)
 The repository is modular and structured as follows:
 
 - **Root Directory**:
-  - [wc.py](file:///c:/Projects/wrjones104_WorldsCollide/wc.py): Central entry point. Orchestrates memory loading, parsing, modding, and writing.
-  - [seed.py](file:///c:/Projects/wrjones104_WorldsCollide/seed.py): Manages random number generation and seeding based on seed strings and flags.
-  - [sprite_hash.py](file:///c:/Projects/wrjones104_WorldsCollide/sprite_hash.py): Generates validation hashes based on settings and versions.
-- [args/](file:///c:/Projects/wrjones104_WorldsCollide/args): Flag and argument parsing. Every gameplay subsystem has a corresponding file here (e.g. `items.py`, `bosses.py`, `scaling.py`).
-- [memory/](file:///c:/Projects/wrjones104_WorldsCollide/memory): Core ROM memory abstractions. Manages memory range reservations, heap allocations, and bank writing.
-- [data/](file:///c:/Projects/wrjones104_WorldsCollide/data): Data modeling representing ROM records (characters, items, spells, shops, bosses). Parses bytes into objects, modifies them, and writes them back.
-- [instruction/](file:///c:/Projects/wrjones104_WorldsCollide/instruction):
-  - [asm.py](file:///c:/Projects/wrjones104_WorldsCollide/instruction/asm.py): Python wrappers for 65816 CPU assembly instructions.
-  - [field/instructions.py](file:///c:/Projects/wrjones104_WorldsCollide/instruction/field/instructions.py): Python classes for SNES map event script bytecodes.
-  - [field/custom.py](file:///c:/Projects/wrjones104_WorldsCollide/instruction/field/custom.py): Dynamically generated assembly-level custom event commands.
-- [event/](file:///c:/Projects/wrjones104_WorldsCollide/event): Game event logic. Each key quest/location has its own script (e.g. `airship.py`, `daryl_tomb.py`).
-- [battle/](file:///c:/Projects/wrjones104_WorldsCollide/battle): Battle logic, level scaling math, and multipliers.
-- [bug_fixes/](file:///c:/Projects/wrjones104_WorldsCollide/bug_fixes): Assembly-level bug fixes for the original game engine (e.g. Magic Evade bug).
-- [settings/](file:///c:/Projects/wrjones104_WorldsCollide/settings): Handles specific gameplay patches (e.g. speed-up/sprint mechanics, permadeath).
-- [utils/](file:///c:/Projects/wrjones104_WorldsCollide/utils): Helper functions for compression, random weightings, and lists.
+  - [wc.py](wc.py): Central entry point. Orchestrates memory loading, parsing, modding, and writing.
+  - [seed.py](seed.py): Manages random number generation and seeding based on seed strings and flags.
+  - [sprite_hash.py](sprite_hash.py): Generates validation hashes based on settings and versions.
+- [args/](args/): Flag and argument parsing. Every gameplay subsystem has a corresponding file here (e.g. `items.py`, `bosses.py`, `scaling.py`).
+- [memory/](memory/): Core ROM memory abstractions. Manages memory range reservations, heap allocations, and bank writing.
+- [data/](data/): Data modeling representing ROM records (characters, items, spells, shops, bosses). Parses bytes into objects, modifies them, and writes them back.
+- [instruction/](instruction/):
+  - [asm.py](instruction/asm.py): Python wrappers for 65816 CPU assembly instructions.
+  - [field/instructions.py](instruction/field/instructions.py): Python classes for SNES map event script bytecodes.
+  - [field/custom.py](instruction/field/custom.py): Dynamically generated assembly-level custom event commands.
+- [event/](event/): Game event logic. Each key quest/location has its own script (e.g. `airship.py`, `daryl_tomb.py`).
+- [battle/](battle/): Battle logic, level scaling math, and multipliers.
+- [bug_fixes/](bug_fixes/): Assembly-level bug fixes for the original game engine (e.g. Magic Evade bug).
+- [settings/](settings/): Handles specific gameplay patches (e.g. speed-up/sprint mechanics, permadeath).
+- [utils/](utils/): Helper functions for compression, random weightings, and lists.
 
 ---
 
 ## 2. Dynamic Option Processing (`args/`)
 
-All CLI options must be declared inside a module in `args/` and registered in [arguments.py](file:///c:/Projects/wrjones104_WorldsCollide/args/arguments.py).
+All CLI options must be declared inside a module in `args/` and registered in [arguments.py](args/arguments.py).
 
 ### How to Add a New Option
 Every module in `args/` (e.g., `args/misc.py`) must implement three key hook functions:
@@ -65,7 +65,7 @@ def flags(args):
 
 ## 3. ROM Space & Allocation Abstractions (`memory/`)
 
-Worlds Collide manages ROM modifications through the `Space` class in [memory/space.py](file:///c:/Projects/wrjones104_WorldsCollide/memory/space.py). **Never** write bytes directly to raw offsets manually.
+Worlds Collide manages ROM modifications through the `Space` class in [memory/space.py](memory/space.py). **Never** write bytes directly to raw offsets manually.
 
 ### Core Functions:
 - `Reserve(start_address, end_address, description, clear_value = None)`: Claims a static block of the original ROM. Useful for overwriting/hooking vanilla code.
@@ -80,7 +80,7 @@ Worlds Collide manages ROM modifications through the `Space` class in [memory/sp
 
 ## 4. 65816 Assembly Engine (`instruction/asm.py`)
 
-When modifying the game engine's assembly, use the instruction classes defined in [instruction/asm.py](file:///c:/Projects/wrjones104_WorldsCollide/instruction/asm.py) rather than raw bytes or custom compiler scripts.
+When modifying the game engine's assembly, use the instruction classes defined in [instruction/asm.py](instruction/asm.py) rather than raw bytes or custom compiler scripts.
 
 ### Basic Assembly Example:
 ```python

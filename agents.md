@@ -77,9 +77,9 @@ MemoryError: Not enough room in space "custom event toggle": Next (0xc0f124) > E
 ```text
 AttributeError: module 'args' has no attribute 'my_new_flag'
 ```
-**Cause**: The subsystem list inside [arguments.py](file:///c:/Projects/wrjones104_WorldsCollide/args/arguments.py) does not contain your new module, or a circular dependency was introduced.
+**Cause**: The subsystem list inside [arguments.py](args/arguments.py) does not contain your new module, or a circular dependency was introduced.
 **Resolution**:
-1. Verify that your custom CLI option module is registered in `self.groups` inside the constructor of `Arguments` in [arguments.py](file:///c:/Projects/wrjones104_WorldsCollide/args/arguments.py#L4-L13).
+1. Verify that your custom CLI option module is registered in `self.groups` inside the constructor of `Arguments` in [arguments.py](args/arguments.py#L4-L13).
 2. Look at import structures. Ensure you did not import game subsystems globally at the top of your custom script file. Move imports inside functions (e.g. inside `mod()`) to resolve circular bindings.
 
 ### 3.3 Event Bit Validation Assertion
@@ -89,7 +89,7 @@ AssertionError: Number of char/esper only checks changed - Check usages of CHARA
 ```
 **Cause**: You modified the number of rewards in an event, causing the randomizer's gating logic to detect that the total available rewards no longer match the hardcoded pool sizes.
 **Resolution**:
-- If you deliberately added/removed a character/esper check to a quest event (e.g. `phoenix_cave.py`), you must update the global expected total `CHARACTER_ESPER_ONLY_REWARDS` constant in [constants/objectives/results.py](file:///c:/Projects/wrjones104_WorldsCollide/constants/objectives/results.py) (or related metadata files) so that the count validator passes.
+- If you deliberately added/removed a character/esper check to a quest event (e.g. `phoenix_cave.py`), you must update the global expected total `CHARACTER_ESPER_ONLY_REWARDS` constant in [constants/objectives/results.py](constants/objectives/results.py) (or related metadata files) so that the count validator passes.
 
 ---
 
