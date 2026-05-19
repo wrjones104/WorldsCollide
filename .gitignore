@@ -7,3 +7,7 @@ wip/
 /diffs
 /tests
 ff3.smc
+.env
+.code-graph/
+.memory/
+.smallcode/
