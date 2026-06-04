@@ -314,33 +314,33 @@ class Enemies():
             self.set_rare_drop(enemy.id, self.items.get_random())
 
     def shuffle_drops_random(self):
-            import random
-            from data.bosses import final_battle_enemy_name
+        import random
+        from data.bosses import final_battle_enemy_name
 
-            # Assemble the list of steals and drops
-            drops = []
-            for enemy in self.enemies:
-                if len(enemy.name) > 0:
-                    loot_list = []
-                    if enemy.id not in final_battle_enemy_name.keys():
-                        loot_list += [enemy.drop_common, enemy.drop_rare]
-                    drops.extend(loot_list)
+        # Assemble the list of steals and drops
+        drops = []
+        for enemy in self.enemies:
+            if len(enemy.name) > 0:
+                loot_list = []
+                if enemy.id not in final_battle_enemy_name.keys():
+                    loot_list += [enemy.drop_common, enemy.drop_rare]
+                drops.extend(loot_list)
 
-            # Randomize the requested number
-            random_percent = self.args.shuffle_drops_random_percent / 100.0
-            number_random = int(random_percent * len(drops))
-            which_random = [a for a in range(len(drops))]
-            random.shuffle(which_random)
-            for id in range(number_random):
-                drops[which_random[id]] = self.items.get_random()
+        # Randomize the requested number
+        random_percent = self.args.shuffle_drops_random_percent / 100.0
+        number_random = int(random_percent * len(drops))
+        which_random = [a for a in range(len(drops))]
+        random.shuffle(which_random)
+        for id in range(number_random):
+            drops[which_random[id]] = self.items.get_random()
 
-            # Shuffle list & reassign to enemies
-            random.shuffle(drops)
-            for enemy in self.enemies:
-                if len(enemy.name) > 0:
-                    if enemy.id not in final_battle_enemy_name.keys():
-                        self.set_common_drop(enemy.id, drops.pop(0))
-                        self.set_rare_drop(enemy.id, drops.pop(0))
+        # Shuffle list & reassign to enemies
+        random.shuffle(drops)
+        for enemy in self.enemies:
+            if len(enemy.name) > 0:
+                if enemy.id not in final_battle_enemy_name.keys():
+                    self.set_common_drop(enemy.id, drops.pop(0))
+                    self.set_rare_drop(enemy.id, drops.pop(0))
 
     def shuffle_steals_random(self):
         import random
@@ -424,12 +424,111 @@ class Enemies():
         self.zones.mod()
         self.scripts.mod()
 
+        if self.args.who_there:
+            self.who_there_mod()
+
         if self.args.scan_all:
             self.scan_all()
 
         if self.args.debug:
             for enemy in self.enemies:
                 enemy.debug_mod()
+
+    def who_there_mod(self):
+        for enemy in self.enemies:
+            if enemy.id in bosses.enemy_name or enemy.id == 282: # 282 is Undead SrBehemoth
+                if enemy.id not in range(343, 352): # Exclude Final Battle Tiers (Short Arm -> Sleep)
+                    enemy.name = "??????"
+        self.who_there_assembly()
+
+    def who_there_assembly(self):
+        from memory.space import Bank, Write
+        import instruction.asm as asm
+
+        # 1. Allocate a 1-byte flag in ROM representing if the flag is active (it will be 1)
+        who_there_flag_space = Write(Bank.F0, [1], "who's there flag")
+        flag_addr = who_there_flag_space.start_address_snes
+
+        # 2. Construct the 384-byte boss table
+        boss_table_bytes = [0] * 384
+        for enemy_id in bosses.enemy_name:
+            if 0 <= enemy_id < 384:
+                boss_table_bytes[enemy_id] = 1
+        boss_table_bytes[282] = 1 # Include SrBehemoth (Undead) Phase 2
+        for excluded_id in range(343, 352): # Exclude Final Battle Tiers
+            boss_table_bytes[excluded_id] = 0
+        
+        boss_table_space = Write(Bank.F0, boss_table_bytes, "who's there boss table")
+        table_addr = boss_table_space.start_address_snes
+
+        # 3. Create the custom check_imp_graphics subroutine in Bank C0
+        src = [
+            asm.PHX(),
+            asm.TDC(),
+            asm.LDA(0x81A7, asm.ABS),
+            asm.TAY(),
+            asm.LDA(0x62C2, asm.ABS_Y),
+            asm.BNE("IS_IMP"),
+
+            asm.LDA(0x81A7, asm.ABS),
+            asm.ASL(),
+            asm.TAX(),
+
+            asm.A16(),
+            asm.LDA(0x2001, asm.ABS_X), # Load the active monster ID from WRAM $2001,X
+            asm.CMP(384, asm.IMM16),
+            asm.BCS("NOT_IMP_16"),
+            asm.TAX(),
+            asm.A8(),
+
+            asm.LDA(flag_addr, asm.LNG),
+            asm.BEQ("NOT_IMP"),
+
+            asm.LDA(table_addr, asm.LNG_X),
+            asm.BNE("IS_IMP"),
+
+            "NOT_IMP",
+            asm.PLX(),
+            asm.LDA(0x81A7, asm.ABS),
+            asm.TAY(),
+            asm.LDA(0x00, asm.IMM8),
+            asm.RTL(),
+
+            "NOT_IMP_16",
+            asm.A8(),
+            asm.PLX(),
+            asm.LDA(0x81A7, asm.ABS),
+            asm.TAY(),
+            asm.LDA(0x00, asm.IMM8),
+            asm.RTL(),
+
+            "IS_IMP",
+            asm.LDA(0x81A7, asm.ABS),
+            asm.ASL(),
+            asm.TAX(),
+            asm.A16(),
+            asm.LDA(0x0000, asm.IMM16),
+            asm.STA(0x812F, asm.ABS_X),
+            asm.A8(),
+
+            asm.PLX(),
+            asm.LDA(0x81A7, asm.ABS),
+            asm.TAY(),
+            asm.LDA(0x01, asm.IMM8),
+            asm.RTL(),
+        ]
+        subroutine_space = Write(Bank.C0, src, "who's there check imp graphics")
+        sub_addr = subroutine_space.start_address_snes
+
+        # 4. Patch the original graphics loader at ROM offset 0x01207B (Bank C1)
+        patch_src = [
+            asm.JSL(sub_addr),
+            asm.BEQ(0x09), # Branch to 0x01208A
+            asm.NOP(),
+            asm.NOP(),
+            asm.NOP(),
+        ]
+        Write(0x01207b, patch_src, "who's there imp graphics loader hook")
 
     def get_event_boss(self, original_boss_name):
         return self.packs.get_event_boss_replacement(original_boss_name)
