@@ -75,6 +75,10 @@ class Enemies():
                 return enemy.id
 
     def get_name(self, enemy_id):
+        if self.args.who_there and (enemy_id in bosses.enemy_name or enemy_id == 282) and enemy_id not in range(343, 352):
+            return "??????"
+        if hasattr(self.args, 'steveify') and self.args.steveify:
+            return self.args.steveify
         if enemy_id in bosses.enemy_name:
             return bosses.enemy_name[enemy_id]
         return self.enemies[enemy_id].name
@@ -472,7 +476,7 @@ class Enemies():
             asm.LDA(0x62C2, asm.ABS_Y),
             asm.BNE("IS_IMP"),
 
-            asm.LDA(0x81A7, asm.ABS),
+            asm.TYA(),
             asm.ASL(),
             asm.TAX(),
 
@@ -498,7 +502,7 @@ class Enemies():
             asm.RTL(),
 
             "IS_IMP",
-            asm.LDA(0x81A7, asm.ABS),
+            asm.TYA(),
             asm.ASL(),
             asm.TAX(),
             asm.A16(),
@@ -531,6 +535,15 @@ class Enemies():
             enemy.print()
 
     def write(self):
+        if hasattr(self.args, 'steveify') and self.args.steveify:
+            for enemy in self.enemies:
+                if self.args.who_there and (enemy.id in bosses.enemy_name or enemy.id == 282) and enemy.id not in range(343, 352):
+                    continue
+                if enemy.name:
+                    enemy.name = self.args.steveify
+                if enemy.special_name:
+                    enemy.special_name = self.args.steveify
+
         for enemy_index in range(len(self.enemies)):
             self.enemy_data[enemy_index] = self.enemies[enemy_index].data()
             self.enemy_name_data[enemy_index] = self.enemies[enemy_index].name_data()
