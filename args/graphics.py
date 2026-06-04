@@ -24,8 +24,8 @@ def parse(parser):
 
     graphics.add_argument("-who", "--who-there", action = "store_true",
                               help = "Who's There? Bosses look like Imps and have the name '??????'")
-    graphics.add_argument("-steve", "--steveify", type = str, nargs='?', const='Steve', default=None,
-                          help = "Steveify the seed: rename all characters, items, espers, magic, enemies, etc. to a given name (default: Steve)")
+    graphics.add_argument("-steve", "--steveify", type = str, nargs='?', const='STEVE', default=None,
+                          help = "Steveify the seed: rename all characters, items, espers, magic, enemies, etc. to a given name (default: STEVE)")
 
 def process(args):
     import graphics.palettes.palettes as palettes
@@ -35,14 +35,14 @@ def process(args):
     if args.steveify is not None:
         if isinstance(args.steveify, bool):
             if args.steveify:
-                args.steveify = "Steve"
+                args.steveify = "STEVE"
             else:
                 args.steveify = None
         elif not args.steveify or args.steveify.isspace() or args.steveify.lower() in ("none", "false"):
             if args.steveify.lower() in ("none", "false"):
                 args.steveify = None
             else:
-                args.steveify = "Steve"
+                args.steveify = "STEVE"
 
         if args.steveify is not None:
             if len(args.steveify) > 6:
