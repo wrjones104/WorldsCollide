@@ -22,9 +22,6 @@ def parse(parser):
     graphics.add_argument("-ahtc", "--alternate-healing-text-color", action = "store_true",
                               help = "Makes healing text blue, to be able to distinguish from damage.")
 
-    graphics.add_argument("-who", "--who-there", action = "store_true",
-                              help = "Who's There? Bosses look like Imps and have the name '??????'")
-
 def process(args):
     import graphics.palettes.palettes as palettes
     import graphics.portraits.portraits as portraits
