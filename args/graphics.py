@@ -22,24 +22,14 @@ def parse(parser):
     graphics.add_argument("-ahtc", "--alternate-healing-text-color", action = "store_true",
                               help = "Makes healing text blue, to be able to distinguish from damage.")
 
+    graphics.add_argument("-who", "--who-there", action = "store_true",
+                              help = "Who's There? Bosses look like Imps and have the name '??????'")
+
 def process(args):
     import graphics.palettes.palettes as palettes
     import graphics.portraits.portraits as portraits
     import graphics.sprites.sprites as sprites
-
-    if args.character_names is not None:
-        args.names = args.character_names.split('.')
-        if len(args.names) != Characters.CHARACTER_COUNT:
-            raise ValueError(f"Invalid number of name arguments ({len(args.names)} should be {Characters.CHARACTER_COUNT})")
-
-        for index in range(len(args.names)):
-            if args.names[index]:
-                args.names[index] = args.names[index][ : Characters.NAME_SIZE]
-            else:
-                args.names[index] = Characters.DEFAULT_NAME[index]
-    else:
-        args.names = Characters.DEFAULT_NAME
-
+    
     args.palettes = []
     if args.character_palettes:
         args.palette_ids = [int(palette_id) for palette_id in args.character_palettes.split('.')]
@@ -96,11 +86,26 @@ def process(args):
     else:
         args.sprite_palettes = DEFAULT_CHARACTER_SPRITE_PALETTES
 
+    if args.character_names is not None:
+        args.names = args.character_names.split('.')
+        if len(args.names) != Characters.CHARACTER_COUNT:
+            raise ValueError(f'Invalid number of name arguments ({len(args.names)} should be {Characters.CHARACTER_COUNT})')
+
+        for index in range(len(args.names)):
+            if args.names[index]:
+                args.names[index] = args.names[index][ : Characters.NAME_SIZE]
+            else:
+                args.names[index] = Characters.DEFAULT_NAME[index]
+    else:
+        args.names = Characters.DEFAULT_NAME
+
 def flags(args):
     flags = ""
 
     if args.character_names:
         flags += " -name " + args.character_names
+    if args.steveify:
+        flags += " -steve " + args.steveify
     if args.character_palettes:
         flags += " -cpal " + args.character_palettes
     if args.character_portraits:
@@ -118,6 +123,8 @@ def flags(args):
         flags += " -wmhc"
     if args.alternate_healing_text_color:
         flags += " -ahtc"
+    if args.who_there:
+        flags += " -who"
 
     return flags
 
@@ -169,10 +176,10 @@ def _character_customization_log(args):
 
     return log
 
-def _other_options_log(args):
-    from log import format_option
-    log = ["Other Graphics"]
+def name():
+    return "Graphics"
 
+def options(args):
     remove_flashes = "Original"
     if args.flashes_remove_worst:
         remove_flashes = "Worst"
@@ -187,11 +194,21 @@ def _other_options_log(args):
     if args.alternate_healing_text_color:
         healing_text = "Blue"
 
-    entries = [
+    return [
         ("Remove Flashes", remove_flashes, "remove_flashes"),
-        ("World Minimap", world_minimap, "world_minimap"),
+        ("Minimap", world_minimap, "world_minimap"),
         ("Healing Text", healing_text, "healing_text"),
+        ("Steveify", args.steveify if args.steveify else "None", "steveify"),
     ]
+
+def menu(args):
+    return (name(), options(args))
+
+def _other_options_log(args):
+    from log import format_option
+    log = ["Other Graphics"]
+
+    entries = options(args)
 
     for entry in entries:
         log.append(format_option(*entry))
