@@ -207,7 +207,7 @@ def options(args):
 
     return [
         ("Remove Flashes", remove_flashes, "remove_flashes"),
-        ("World Minimap", world_minimap, "world_minimap"),
+        ("Minimap", world_minimap, "world_minimap"),
         ("Healing Text", healing_text, "healing_text"),
         ("Who's There?", args.who_there, "who_there"),
         ("Steveify", args.steveify if args.steveify else "None", "steveify"),

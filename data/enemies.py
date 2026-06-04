@@ -520,9 +520,8 @@ class Enemies():
         # 4. Patch the original graphics loader at ROM offset 0x01207B (Bank C1)
         patch_src = [
             asm.JSL(sub_addr),
-            asm.BEQ(0x09), # Branch to 0x01208A
-            asm.NOP(),
-            asm.NOP(),
+            asm.CMP(0x00, asm.IMM8),
+            asm.BEQ(0x07), # Branch to 0x01208A
             asm.NOP(),
         ]
         Write(0x01207b, patch_src, "who's there imp graphics loader hook")
