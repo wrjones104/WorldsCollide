@@ -55,7 +55,7 @@ def process(args):
             item_id = 0
             try:
                 item_id = int(values[index])
-            except:
+            except (ValueError, TypeError):
                 args.parser.error(f"start-items: Failed to convert value into an int '{values[index]}'")
             if item_id < 0 or item_id >= 255:
                 args.parser.error(f"start-items: '{item_id}' is an invalid value for an item id. It must be between 0-254")
@@ -63,7 +63,7 @@ def process(args):
             min = 0
             try:
                 min = int(values[index + 1])
-            except:
+            except (ValueError, TypeError):
                 args.parser.error(f"start-items: Failed to convert value into an int '{values[index+1]}'")
             if min < 0 or min > 99:
                 args.parser.error(f"start-items: '{min}' is an invalid min for an item. It must be between 0 and 99")
@@ -71,7 +71,7 @@ def process(args):
             max = 0
             try:
                 max = int(values[index + 2])
-            except:
+            except (ValueError, TypeError):
                 args.parser.error(f"start-items: Failed to convert value into an int '{values[index+2]}'")
             if max <= 0 or max > 99:
                 args.parser.error(f"start-items: '{max}' is an invalid count for an item. It must be between 1-99")
@@ -81,8 +81,8 @@ def process(args):
             item = StartingItem(item_id, min, max)
             args.start_items_list.append(item)
             total_item_commands += 1
-        if total_item_commands > 30 :
-            args.parser.error(f"start-items: '{total_item_commands}' Item types are trying to be added in total. Only up to 30 are supported")
+        if len(args.start_items_list) > 30:
+            args.parser.error(f"start-items: '{len(args.start_items_list)}' Item types are trying to be added in total. Only up to 30 are supported")
 
 def flags(args):
     flags = ""
