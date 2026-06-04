@@ -78,6 +78,7 @@ class Enemies():
         if self.args.who_there and (enemy_id in bosses.enemy_name or enemy_id == 282) and enemy_id not in range(343, 352):
             return "??????"
         if hasattr(self.args, 'steveify') and self.args.steveify:
+        if self.args.steveify:
             return self.args.steveify
         if enemy_id in bosses.enemy_name:
             return bosses.enemy_name[enemy_id]
@@ -318,33 +319,33 @@ class Enemies():
             self.set_rare_drop(enemy.id, self.items.get_random())
 
     def shuffle_drops_random(self):
-            import random
-            from data.bosses import final_battle_enemy_name
+        import random
+        from data.bosses import final_battle_enemy_name
 
-            # Assemble the list of steals and drops
-            drops = []
-            for enemy in self.enemies:
-                if len(enemy.name) > 0:
-                    loot_list = []
-                    if enemy.id not in final_battle_enemy_name.keys():
-                        loot_list += [enemy.drop_common, enemy.drop_rare]
-                    drops.extend(loot_list)
+        # Assemble the list of steals and drops
+        drops = []
+        for enemy in self.enemies:
+            if len(enemy.name) > 0:
+                loot_list = []
+                if enemy.id not in final_battle_enemy_name.keys():
+                    loot_list += [enemy.drop_common, enemy.drop_rare]
+                drops.extend(loot_list)
 
-            # Randomize the requested number
-            random_percent = self.args.shuffle_drops_random_percent / 100.0
-            number_random = int(random_percent * len(drops))
-            which_random = [a for a in range(len(drops))]
-            random.shuffle(which_random)
-            for id in range(number_random):
-                drops[which_random[id]] = self.items.get_random()
+        # Randomize the requested number
+        random_percent = self.args.shuffle_drops_random_percent / 100.0
+        number_random = int(random_percent * len(drops))
+        which_random = [a for a in range(len(drops))]
+        random.shuffle(which_random)
+        for id in range(number_random):
+            drops[which_random[id]] = self.items.get_random()
 
-            # Shuffle list & reassign to enemies
-            random.shuffle(drops)
-            for enemy in self.enemies:
-                if len(enemy.name) > 0:
-                    if enemy.id not in final_battle_enemy_name.keys():
-                        self.set_common_drop(enemy.id, drops.pop(0))
-                        self.set_rare_drop(enemy.id, drops.pop(0))
+        # Shuffle list & reassign to enemies
+        random.shuffle(drops)
+        for enemy in self.enemies:
+            if len(enemy.name) > 0:
+                if enemy.id not in final_battle_enemy_name.keys():
+                    self.set_common_drop(enemy.id, drops.pop(0))
+                    self.set_rare_drop(enemy.id, drops.pop(0))
 
     def shuffle_steals_random(self):
         import random
@@ -539,6 +540,8 @@ class Enemies():
             for enemy in self.enemies:
                 if self.args.who_there and (enemy.id in bosses.enemy_name or enemy.id == 282) and enemy.id not in range(343, 352):
                     continue
+        if self.args.steveify:
+            for enemy in self.enemies:
                 if enemy.name:
                     enemy.name = self.args.steveify
                 if enemy.special_name:
