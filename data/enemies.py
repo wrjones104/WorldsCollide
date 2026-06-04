@@ -78,7 +78,6 @@ class Enemies():
         if self.args.who_there and (enemy_id in bosses.enemy_name or enemy_id == 282) and enemy_id not in range(343, 352):
             return "??????"
         if hasattr(self.args, 'steveify') and self.args.steveify:
-        if self.args.steveify:
             return self.args.steveify
         if enemy_id in bosses.enemy_name:
             return bosses.enemy_name[enemy_id]
@@ -540,8 +539,6 @@ class Enemies():
             for enemy in self.enemies:
                 if self.args.who_there and (enemy.id in bosses.enemy_name or enemy.id == 282) and enemy.id not in range(343, 352):
                     continue
-        if self.args.steveify:
-            for enemy in self.enemies:
                 if enemy.name:
                     enemy.name = self.args.steveify
                 if enemy.special_name:
