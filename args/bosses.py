@@ -36,7 +36,7 @@ def parse(parser):
     bosses.add_argument("-bmkl", "--boss-marshal-keep-lobos", action = "store_true",
                         help = "Don't replace the Marshal's Lobos with randomized enemies")
     bosses.add_argument("-oops", default = None, type = str,
-                        help = "Oops, all <boss>! Replace all bosses with the specified boss enemy ID or name.")
+                        help = "Oops, all <boss>! Replace all bosses with the specified boss enemy ID or name, or \"random\".")
 
 def process(args):
     if args.mix_bosses_dragons:
@@ -52,12 +52,12 @@ def process(args):
     if args.oops is not None:
         import data.bosses as bosses
         excluded_final_battle_ids = set(bosses.final_battle_enemy_name.keys())
-        excluded_final_battle_ids.remove(298) # Keep Kefka (Final) as valid!
+        excluded_final_battle_ids.discard(298) # Keep Kefka (Final) as valid!
 
         try:
             # Try to parse as integer ID first
             oops_id = int(args.oops)
-            if not (0 <= oops_id <= 383) or oops_id in excluded_final_battle_ids:
+            if oops_id not in bosses.enemy_name or oops_id in excluded_final_battle_ids or oops_id in bosses.removed_enemy_name:
                 raise ValueError()
             args.oops = oops_id
         except ValueError:
@@ -73,6 +73,8 @@ def process(args):
             normalized_input = normalize(args.oops)
             if normalized_input in name_to_id:
                 args.oops = name_to_id[normalized_input]
+            elif normalized_input == "random":
+                args.oops = "random"
             else:
                 raise ValueError(
                     f"Invalid boss ID or name: '{args.oops}'. "
