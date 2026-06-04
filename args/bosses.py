@@ -52,12 +52,12 @@ def process(args):
     if args.oops is not None:
         import data.bosses as bosses
         excluded_final_battle_ids = set(bosses.final_battle_enemy_name.keys())
-        excluded_final_battle_ids.remove(298) # Keep Kefka (Final) as valid!
+        excluded_final_battle_ids.discard(298) # Keep Kefka (Final) as valid!
 
         try:
             # Try to parse as integer ID first
             oops_id = int(args.oops)
-            if not (0 <= oops_id <= 383) or oops_id in excluded_final_battle_ids:
+            if oops_id not in bosses.enemy_name or oops_id in excluded_final_battle_ids or oops_id in bosses.removed_enemy_name:
                 raise ValueError()
             args.oops = oops_id
         except ValueError:
