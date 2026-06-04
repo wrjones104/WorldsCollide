@@ -187,10 +187,10 @@ def _character_customization_log(args):
 
     return log
 
-def _other_options_log(args):
-    from log import format_option
-    log = ["Other Graphics"]
+def name():
+    return "Graphics"
 
+def options(args):
     remove_flashes = "Original"
     if args.flashes_remove_worst:
         remove_flashes = "Worst"
@@ -205,17 +205,22 @@ def _other_options_log(args):
     if args.alternate_healing_text_color:
         healing_text = "Blue"
 
-    who_there = "Original"
-    if args.who_there:
-        who_there = "Imps"
-
-    entries = [
+    return [
         ("Remove Flashes", remove_flashes, "remove_flashes"),
         ("World Minimap", world_minimap, "world_minimap"),
         ("Healing Text", healing_text, "healing_text"),
-        ("Who's There?", who_there, "who_there"),
+        ("Who's There?", args.who_there, "who_there"),
         ("Steveify", args.steveify if args.steveify else "None", "steveify"),
     ]
+
+def menu(args):
+    return (name(), options(args))
+
+def _other_options_log(args):
+    from log import format_option
+    log = ["Other Graphics"]
+
+    entries = options(args)
 
     for entry in entries:
         log.append(format_option(*entry))
