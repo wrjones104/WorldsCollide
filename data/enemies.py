@@ -75,6 +75,10 @@ class Enemies():
                 return enemy.id
 
     def get_name(self, enemy_id):
+        if self.args.who_there and (enemy_id in bosses.enemy_name or enemy_id == 282) and enemy_id not in range(343, 352):
+            return "??????"
+        if hasattr(self.args, 'steveify') and self.args.steveify:
+            return self.args.steveify
         if enemy_id in bosses.enemy_name:
             return bosses.enemy_name[enemy_id]
         return self.enemies[enemy_id].name
@@ -463,14 +467,16 @@ class Enemies():
 
         # 3. Create the custom check_imp_graphics subroutine in Bank C0
         src = [
+            asm.PHP(),
             asm.PHX(),
             asm.TDC(),
+            asm.A8(),
             asm.LDA(0x81A7, asm.ABS),
             asm.TAY(),
             asm.LDA(0x62C2, asm.ABS_Y),
             asm.BNE("IS_IMP"),
 
-            asm.LDA(0x81A7, asm.ABS),
+            asm.TYA(),
             asm.ASL(),
             asm.TAX(),
 
@@ -487,34 +493,25 @@ class Enemies():
             asm.LDA(table_addr, asm.LNG_X),
             asm.BNE("IS_IMP"),
 
-            "NOT_IMP",
-            asm.PLX(),
-            asm.LDA(0x81A7, asm.ABS),
-            asm.TAY(),
-            asm.LDA(0x00, asm.IMM8),
-            asm.RTL(),
-
             "NOT_IMP_16",
             asm.A8(),
-            asm.PLX(),
-            asm.LDA(0x81A7, asm.ABS),
-            asm.TAY(),
+            "NOT_IMP",
             asm.LDA(0x00, asm.IMM8),
+            asm.PLX(),
+            asm.PLP(),
             asm.RTL(),
 
             "IS_IMP",
-            asm.LDA(0x81A7, asm.ABS),
+            asm.TYA(),
             asm.ASL(),
             asm.TAX(),
             asm.A16(),
             asm.LDA(0x0000, asm.IMM16),
             asm.STA(0x812F, asm.ABS_X),
             asm.A8(),
-
-            asm.PLX(),
-            asm.LDA(0x81A7, asm.ABS),
-            asm.TAY(),
             asm.LDA(0x01, asm.IMM8),
+            asm.PLX(),
+            asm.PLP(),
             asm.RTL(),
         ]
         subroutine_space = Write(Bank.C0, src, "who's there check imp graphics")
@@ -523,9 +520,8 @@ class Enemies():
         # 4. Patch the original graphics loader at ROM offset 0x01207B (Bank C1)
         patch_src = [
             asm.JSL(sub_addr),
-            asm.BEQ(0x09), # Branch to 0x01208A
-            asm.NOP(),
-            asm.NOP(),
+            asm.CMP(0x00, asm.IMM8),
+            asm.BEQ(0x07), # Branch to 0x01208A
             asm.NOP(),
         ]
         Write(0x01207b, patch_src, "who's there imp graphics loader hook")
@@ -538,6 +534,15 @@ class Enemies():
             enemy.print()
 
     def write(self):
+        if hasattr(self.args, 'steveify') and self.args.steveify:
+            for enemy in self.enemies:
+                if self.args.who_there and (enemy.id in bosses.enemy_name or enemy.id == 282) and enemy.id not in range(343, 352):
+                    continue
+                if enemy.name:
+                    enemy.name = self.args.steveify
+                if enemy.special_name:
+                    enemy.special_name = self.args.steveify
+
         for enemy_index in range(len(self.enemies)):
             self.enemy_data[enemy_index] = self.enemies[enemy_index].data()
             self.enemy_name_data[enemy_index] = self.enemies[enemy_index].name_data()

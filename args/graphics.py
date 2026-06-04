@@ -27,6 +27,22 @@ def process(args):
     import graphics.portraits.portraits as portraits
     import graphics.sprites.sprites as sprites
 
+    if args.steveify is not None:
+        if isinstance(args.steveify, bool):
+            if args.steveify:
+                args.steveify = "STEVE"
+            else:
+                args.steveify = None
+        elif not args.steveify or args.steveify.isspace() or args.steveify.lower() in ("none", "false"):
+            if args.steveify.lower() in ("none", "false"):
+                args.steveify = None
+            else:
+                args.steveify = "STEVE"
+
+        if args.steveify is not None:
+            if len(args.steveify) > 6:
+                args.steveify = args.steveify[:6]
+
     if args.character_names is not None:
         args.names = args.character_names.split('.')
         if len(args.names) != Characters.CHARACTER_COUNT:
@@ -39,6 +55,9 @@ def process(args):
                 args.names[index] = Characters.DEFAULT_NAME[index]
     else:
         args.names = Characters.DEFAULT_NAME
+
+    if args.steveify is not None:
+        args.names = [args.steveify] * Characters.CHARACTER_COUNT
 
     args.palettes = []
     if args.character_palettes:
@@ -101,6 +120,8 @@ def flags(args):
 
     if args.character_names:
         flags += " -name " + args.character_names
+    if args.steveify:
+        flags += " -steve " + args.steveify
     if args.character_palettes:
         flags += " -cpal " + args.character_palettes
     if args.character_portraits:
@@ -171,10 +192,10 @@ def _character_customization_log(args):
 
     return log
 
-def _other_options_log(args):
-    from log import format_option
-    log = ["Other Graphics"]
+def name():
+    return "Graphics"
 
+def options(args):
     remove_flashes = "Original"
     if args.flashes_remove_worst:
         remove_flashes = "Worst"
@@ -189,16 +210,22 @@ def _other_options_log(args):
     if args.alternate_healing_text_color:
         healing_text = "Blue"
 
-    who_there = "Original"
-    if args.who_there:
-        who_there = "Imps"
-
-    entries = [
+    return [
         ("Remove Flashes", remove_flashes, "remove_flashes"),
-        ("World Minimap", world_minimap, "world_minimap"),
+        ("Minimap", world_minimap, "world_minimap"),
         ("Healing Text", healing_text, "healing_text"),
-        ("Who's There?", who_there, "who_there"),
+        ("Who's There?", args.who_there, "who_there"),
+        ("Steveify", args.steveify if args.steveify else "None", "steveify"),
     ]
+
+def menu(args):
+    return (name(), options(args))
+
+def _other_options_log(args):
+    from log import format_option
+    log = ["Other Graphics"]
+
+    entries = options(args)
 
     for entry in entries:
         log.append(format_option(*entry))
